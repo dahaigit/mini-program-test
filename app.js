@@ -29,7 +29,8 @@ App({
     userInfo: null,
     auth: {
       token: '',
-      express_at: 0
+      express_at: 0,
+      is_db_user: 0
     }
   },
   // 检查用户是否授权获取用户信息
@@ -68,7 +69,9 @@ App({
                 return getApp().getUserInfo()
               })
               .then(function (user) {
-                return getApp().parseUser(user)
+                if (getApp().globalData.is_db_user === 0) {
+                  return getApp().parseUser(user)
+                }
               })
           }
         })
@@ -88,6 +91,7 @@ App({
                if (res.data.data) {
                  getApp().globalData.auth.token = res.data.data.token
                  getApp().globalData.auth.express_at = res.data.data.express_at
+                 getApp().globalData.auth.is_db_user = res.data.data.is_db_user
                  resolve(res)
                } else {
                  /* 异步操作失败 */
