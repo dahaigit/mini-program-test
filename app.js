@@ -1,22 +1,18 @@
 //app.js
 App({
-  onShow: function () {
-    
-  },
   onLaunch: function () {
-    console.log('页面初始化功能执行')
     // 展示本地存储能力
     var logs = wx.getStorageSync('logs') || []
     logs.unshift(Date.now())
     wx.setStorageSync('logs', logs)
+    // 初始化全局变量
+    this.initGlobalData()
     // 登录
     this.checkIsAuthUserInfo()
       .then(function (isAuth) {
         if (isAuth) {
-          console.log('已经授权')
           getApp().checkIsLogin()
         } else {
-          console.log('没有授权，跳转到授权页面')
           // 弹出授权按钮
           wx.navigateTo({
             url: '/pages/authinfo/authinfo'
@@ -33,9 +29,29 @@ App({
       is_db_user: 0
     }
   },
+  initGlobalData: function () {
+    const app = this
+    try {
+      if (wx.getStorageSync('user:auth') === '') {
+        app.globalData.auth = {}
+      } else {
+        app.globalData.auth = wx.getStorageSync('user:auth')
+      }
+    } catch (e) {
+
+    }
+    try {
+      if (wx.getStorageSync('user:info') === '') {
+        app.globalData.userInfo = null
+      } else {
+        app.globalData.userInfo = wx.getStorageSync('user:info')
+      }
+    } catch (e) {
+
+    }
+  },
   // 检查用户是否授权获取用户信息
   checkIsAuthUserInfo: function() {
-    console.log('检查是否授权')
     return new Promise(function (resolve, reject) {
       wx.getSetting({
         success: res => {
@@ -53,12 +69,11 @@ App({
   },
   // 检查微信是否已经登陆
   checkIsLogin: function() {
-    console.log('检查是否登陆')
     return new Promise(function (resolve, reject){
         wx.checkSession({
           success() {
             //session_key 未过期，并且在本生命周期一直有效
-            console.log(1)
+            // 验证auth.token是否失效，在路由守卫中验证接口返回状态码是否为401。401表示登陆token已失效
             resolve(true)
           },
           fail() {
@@ -79,19 +94,21 @@ App({
   },
   // 微信登陆
   login: function () {
-    console.log('开始登陆')
      return new Promise(function(resolve, reject){
        wx.login({
          success: res => {
-           // 发送 res.code 到后台换取 openId, sessionKey, unionId
            wx.request({
              url: 'http://dev.hyperf-wechat.com:9501/app/auth/login?code=' + res.code,
              success(res) {
-               console.log('登陆ok')
                if (res.data.data) {
                  getApp().globalData.auth.token = res.data.data.token
                  getApp().globalData.auth.express_at = res.data.data.express_at
                  getApp().globalData.auth.is_db_user = res.data.data.is_db_user
+                 // 把获取的授权数据存储到缓存中
+                 wx.setStorage({
+                   key: 'user:auth',
+                   data: getApp().globalData.auth,
+                 })
                  resolve(res)
                } else {
                  /* 异步操作失败 */
@@ -102,13 +119,16 @@ App({
                reject(error);
              }
            })
+
          }
        })
      });
   },
+  http: function (url, method,) {
+
+  },
   // 微信获取用户详情
   getUserInfo : function () {
-    console.log('获取用户详情')
     return new Promise(function (resolve, reject) {
       wx.getSetting({
         success: res => {
@@ -119,7 +139,11 @@ App({
                 if (res) {
                   // 可以将 res 发送给后台解码出 unionId
                   getApp().globalData.userInfo = res.userInfo
-                  console.log('获取用户详情成功')
+                  // 把获取的用户存储到缓存中
+                  wx.setStorage({
+                    key: 'user:info',
+                    data: res.userInfo,
+                  })
                   // 由于 getUserInfo 是网络请求，可能会在 Page.onLoad 之后才返回
                   // 所以此处加入 callback 以防止这种情况
                   if (getApp().userInfoReadyCallback) {
@@ -132,8 +156,6 @@ App({
                 }
               }
             })
-          } else {
-            console.log('用户还未授权,跳到授权页面。')
           }
         },
         fail: error => {
@@ -145,7 +167,6 @@ App({
   // 解析用户，把用户信息回传给服务器
   parseUser : function (user) {
     return new Promise(function (resolve, reject) {
-      console.log('开始解析用户')
       wx.request({
         url: 'http://dev.hyperf-wechat.com:9501/user/parse',
         header: {
