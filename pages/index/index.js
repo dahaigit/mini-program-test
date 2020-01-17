@@ -43,11 +43,9 @@ Page({
     }
   },
   onPageScroll: function (obj) {
-    console.log('页面显示了')
     console.log(obj)
   },
   getUserInfo: function(e) {
-    console.log(e)
     app.globalData.userInfo = e.detail.userInfo
     this.setData({
       userInfo: e.detail.userInfo,
@@ -57,7 +55,7 @@ Page({
   click1: function(obj){
     console.log(obj)
     wx.showToast({
-      title: '大海牛逼',
+      title: getApp().globalData.auth.token,
       icon: 'error',
       duration: 1000
     })
