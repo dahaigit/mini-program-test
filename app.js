@@ -69,7 +69,7 @@ App({
                 return getApp().getUserInfo()
               })
               .then(function (user) {
-                if (getApp().globalData.is_db_user === 0) {
+                if (getApp().globalData.auth.is_db_user === 0) {
                   return getApp().parseUser(user)
                 }
               })
