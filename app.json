@@ -1,8 +1,9 @@
 {
   "pages": [
+    "pages/authinfo/authinfo",
     "pages/index/index",
-    "pages/logs/logs",
-    "pages/authinfo/authinfo"
+    "pages/logs/logs"
+    
   ],
   "window": {
     "backgroundTextStyle": "light",

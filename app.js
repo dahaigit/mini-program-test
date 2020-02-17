@@ -168,7 +168,7 @@ App({
   parseUser : function (user) {
     return new Promise(function (resolve, reject) {
       wx.request({
-        url: 'http://dev.hyperf-wechat.com:9501/user/parse',
+        url: 'http://dev.hyperf-wechat.com:9501/app/user/parse',
         header: {
          
         },

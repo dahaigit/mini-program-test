@@ -1,0 +1,1 @@
+export var apiHost = 'http://dev.hyperf-wechat.com:9501/';
